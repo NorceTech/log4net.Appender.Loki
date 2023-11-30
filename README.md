@@ -1,7 +1,5 @@
 # Log4Net Grafana Loki Appender
 
-[![Dot Net Framework 4.6.2 (Build)](https://github.com/gabrielcerutti/log4net.Appender.Loki/actions/workflows/netframework.build.yml/badge.svg)](https://github.com/gabrielcerutti/log4net.Appender.Loki/actions/workflows/netframework.build.yml)
-
 This appender will allow *log4net* to be configured to send log messages to Loki directly, some features this library supports:
 
  - JSON format
@@ -12,12 +10,6 @@ This appender will allow *log4net* to be configured to send log messages to Loki
 
 ## Installation
 
-The *Log4net.Appender.Grafana.Loki* NuGet [package can be found here](https://www.nuget.org/packages/Log4net.Appender.Grafana.Loki/). Alternatively you can install it via one of the following commands below:
-
-NuGet command:
-```bash
-Install-Package Log4Net.Appender.Grafana.Loki
-```
 
 ## Log4net configuration
 
@@ -33,7 +25,6 @@ Sample Log4net config:
     <BasicAuthUserName value="username" /> <!-- To be added if basic authent enabled  -->
     <BasicAuthPassword value="password" /> <!-- To be added if basic authent enabled  -->
     <GZipCompression value="true" /> <!-- To compress the post request using GZip compression -->
-    <TrustSelfSignedCerts value="false" /> <!-- To trust self signed certificates. Default: false -->
   </appender>
 </log4net>
 ```

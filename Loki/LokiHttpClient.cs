@@ -8,35 +8,14 @@ namespace Log4Net.Appender.Loki
 {
     public class LokiHttpClient
     {
-        protected readonly HttpClient HttpClient;
-
-        public LokiHttpClient(bool trustSelfSignedCerts)
-        {
-            if (trustSelfSignedCerts)
-            {
-                var handler = new HttpClientHandler
-                {
-                    ClientCertificateOptions = ClientCertificateOption.Manual,
-                    ServerCertificateCustomValidationCallback =
-                    (httpRequestMessage, cert, cetChain, policyErrors) =>
-                    {
-                        return true;
-                    }
-                };
-                HttpClient = new HttpClient(handler);
-            }
-            else
-            {
-                HttpClient = new HttpClient();
-            }
-        }
+        private static readonly HttpClient httpClient = HttpClientSingleton.Instance.HttpClient;
 
         public void SetAuthCredentials(LokiCredentials credentials)
         {
             if (!(credentials is BasicAuthCredentials c))
                 return;
 
-            var headers = HttpClient.DefaultRequestHeaders;
+            var headers = httpClient.DefaultRequestHeaders;
             if (headers.Any(x => x.Key == "Authorization"))
                 return;
 
@@ -47,11 +26,11 @@ namespace Log4Net.Appender.Loki
         public virtual Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
         {
             content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json");
-            return HttpClient.PostAsync(requestUri, content);
+            return httpClient.PostAsync(requestUri, content);
         }
 
         public virtual void Dispose()
-            => HttpClient.Dispose();
+            => httpClient.Dispose();
 
         private static string Base64Encode(string plainText)
         {
