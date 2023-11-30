@@ -1,5 +1,7 @@
 ﻿using log4net.Appender;
 using log4net.Core;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -8,28 +10,49 @@ using System.Text;
 
 namespace Log4Net.Appender.Loki
 {
+    public sealed class HttpClientSingleton
+    {
+        private static readonly Lazy<HttpClientSingleton> lazy = new Lazy<HttpClientSingleton>(() => new HttpClientSingleton());
+        public HttpClient HttpClient { get; }
+
+        public static HttpClientSingleton Instance => lazy.Value;
+        public static TimeSpan DefaultHttpClientTimeout = TimeSpan.FromSeconds(15);
+
+        private HttpClientSingleton()
+        {
+            HttpClient = new HttpClient { Timeout = DefaultHttpClientTimeout };
+        }
+    }
+
     public class LokiAppender : BufferingAppenderSkeleton
     {
         public string Application { get; set; }
-        public string Environment { get; set; }
+        public string ApplicationEnvironment { get; set; }
+        public string HostingEnvironment { get; set; }
         public string ServiceUrl { get; set; }
         public string BasicAuthUserName { get; set; }
         public string BasicAuthPassword { get; set; }
         public bool GZipCompression { get; set; }
-        public bool TrustSelfSignedCerts { get; set; }
+
+        public LokiAppender()
+        {
+            Console.WriteLine("ctor called");
+        }
 
         private void PostLoggingEvent(LoggingEvent[] loggingEvents)
         {
             var labels = new LokiLabel[] {
                 new LokiLabel("Application", Application),
-                new LokiLabel("Environment", Environment)
+                new LokiLabel("ApplicationEnvironment", ApplicationEnvironment),
+                new LokiLabel("HostingEnvironment", HostingEnvironment),
             };
+
             var properties = new LokiProperty[] {
                 new LokiProperty("MachineName", System.Environment.MachineName),
                 new LokiProperty("ProcessName", Process.GetCurrentProcess().ProcessName)
             };
             var formatter = new LokiBatchFormatter(labels, properties);
-            var httpClient = new LokiHttpClient(TrustSelfSignedCerts);
+            var httpClient = new LokiHttpClient();
 
             if (httpClient is LokiHttpClient c)
             {
@@ -61,7 +84,6 @@ namespace Log4Net.Appender.Loki
                 else
                 {
                     var content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(loggingEventsStr)));
-                    //var contentStr = content.ReadAsStringAsync().Result; // TO VERIFY                
                     httpClient.PostAsync(LokiRouteBuilder.BuildPostUri(ServiceUrl), content);
                 }
             }
