@@ -1,7 +1,6 @@
 name: log4net.Appender.Grafana.Loki - $(majorMinorVersion).$(semanticVersion)$(versionSuffix) -
 
 trigger:
-  - production
   - master
 
 pool:
@@ -12,10 +11,10 @@ variables:
   buildPlatform: 'Any CPU'
   majorMinorVersion: 1.0.6
   semanticVersion: $[counter(variables['majorMinorVersion'], 0)]
-  ${{ if eq(variables['Build.SourceBranchName'], 'production') }}:
+  ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
     versionSuffix: ''
     buildConfiguration: 'Release'
-  ${{ if ne(variables['Build.SourceBranchName'], 'production') }}:
+  ${{ if ne(variables['Build.SourceBranchName'], 'master') }}:
     versionSuffix: '-beta'
     buildConfiguration: 'Debug'
   version: $(majorMinorVersion).$(semanticVersion)
